@@ -53,7 +53,7 @@ pipeline {
     options {
         timestamps()
         ansiColor('xterm')
-        timeout(time: 45, unit: 'MINUTES')
+        timeout(time: 60, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '20'))
     }
 
@@ -93,6 +93,9 @@ Dockerfile: ${params.DOCKERFILE_PATH}
         stage('Prepare Build Environment') {
             steps {
                 sh """
+                    echo "=== Server memory ==="
+                    free -h
+
                     echo "=== Disk space before cleanup ==="
                     df -h / | tail -1
 
@@ -102,6 +105,21 @@ Dockerfile: ${params.DOCKERFILE_PATH}
 
                     echo "=== Disk space after cleanup ==="
                     df -h / | tail -1
+
+                    echo "=== Creating swap space (if not exists) to prevent OOM ==="
+                    docker run --rm --privileged -v /:/host alpine sh -c '
+                        if [ ! -f /host/swapfile ]; then
+                            dd if=/dev/zero of=/host/swapfile bs=1M count=4096 2>/dev/null
+                            chmod 600 /host/swapfile
+                            mkswap /host/swapfile
+                            swapon /host/swapfile
+                            echo "4GB swap created and enabled"
+                        else
+                            swapon /host/swapfile 2>/dev/null || true
+                            echo "Swap already exists"
+                        fi
+                        free -h
+                    '
 
                     echo "=== Increasing inotify file watcher limit ==="
                     docker run --rm --privileged alpine sh -c \
@@ -119,6 +137,7 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                         -t ${DOCR_IMAGE}:${env.RESOLVED_TAG} \
                         -t ${DOCR_IMAGE}:latest \
                         --build-arg BUILD_COMMIT=${env.GIT_COMMIT_SHORT} \
+                        --memory=3g \
                         .
 
                     echo "=== Build complete ==="
