@@ -16,6 +16,9 @@ COPY ./packages/twenty-shared/package.json /app/packages/twenty-shared/
 COPY ./packages/twenty-front/package.json /app/packages/twenty-front/
 COPY ./packages/twenty-sdk/package.json /app/packages/twenty-sdk/
 
+# Increase Node.js heap for large builds (21K+ modules in twenty-front)
+ENV NODE_OPTIONS="--max-old-space-size=6144"
+
 # Install all dependencies
 RUN yarn && yarn cache clean && npx nx reset
 

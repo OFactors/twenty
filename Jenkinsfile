@@ -137,7 +137,6 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                         -t ${DOCR_IMAGE}:${env.RESOLVED_TAG} \
                         -t ${DOCR_IMAGE}:latest \
                         --build-arg BUILD_COMMIT=${env.GIT_COMMIT_SHORT} \
-                        --memory=3g \
                         .
 
                     echo "=== Build complete ==="
