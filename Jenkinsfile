@@ -169,7 +169,7 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                             exit 0
                         fi
 
-                        git config user.email "jenkins@rupeequicker.com"
+                        git config user.email "jenkins@avoca.cloud"
                         git config user.name "Jenkins CI"
                         git add k8s-manifests/clients/*/kustomization.yaml
                         git commit -m "chore: update Twenty CRM image to ${env.RESOLVED_TAG}
