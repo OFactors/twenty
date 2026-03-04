@@ -96,17 +96,10 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                     echo "=== Server memory ==="
                     free -h
 
-                    echo "=== Disk space before cleanup ==="
+                    echo "=== Disk space ==="
                     df -h / | tail -1
 
-                    echo "=== Cleaning Docker build cache, dangling images, and stopped containers ==="
-                    docker system prune -af --volumes || true
-                    docker builder prune -af || true
-
-                    echo "=== Disk space after cleanup ==="
-                    df -h / | tail -1
-
-                    echo "=== Creating swap space (if not exists) to prevent OOM ==="
+                    echo "=== Ensuring swap is active ==="
                     docker run --rm --privileged -v /:/host alpine sh -c '
                         if [ ! -f /host/swapfile ]; then
                             dd if=/dev/zero of=/host/swapfile bs=1M count=4096 2>/dev/null
@@ -133,6 +126,7 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                 sh """
                     echo "=== Building Twenty CRM from source ==="
                     DOCKER_BUILDKIT=1 docker build \
+                        --progress=plain \
                         -f ${params.DOCKERFILE_PATH} \
                         -t ${DOCR_IMAGE}:${env.RESOLVED_TAG} \
                         -t ${DOCR_IMAGE}:latest \
