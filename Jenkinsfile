@@ -105,11 +105,13 @@ Dockerfile: ${params.DOCKERFILE_PATH}
             steps {
                 sh """
                     echo "=== Building Twenty CRM from source ==="
-                    docker build \
+                    DOCKER_BUILDKIT=1 docker build \
                         -f ${params.DOCKERFILE_PATH} \
                         -t ${DOCR_IMAGE}:${env.RESOLVED_TAG} \
                         -t ${DOCR_IMAGE}:latest \
                         --build-arg BUILD_COMMIT=${env.GIT_COMMIT_SHORT} \
+                        --memory=4g \
+                        --memory-swap=8g \
                         .
 
                     echo "=== Build complete ==="
