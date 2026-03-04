@@ -238,7 +238,7 @@ Source commit: ${env.GIT_COMMIT_SHORT} - ${env.GIT_COMMIT_MSG}"
                     sh """
                         doctl auth init --access-token \$DIGITALOCEAN_ACCESS_TOKEN
                         echo "=== DOCR Repository Tags ==="
-                        doctl registry repository list-tags twenty --registry-name twentycrmprod --format Tag,CompressedSize,UpdatedAt
+                        doctl registry repository list-tags twentycrmprod/twenty --format Tag,CompressedSizeBytes,UpdatedAt
                     """
                 }
             }
