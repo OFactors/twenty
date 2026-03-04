@@ -1,5 +1,5 @@
 # Base image for common dependencies
-FROM node:24-alpine AS common-deps
+FROM node:22-alpine AS common-deps
 
 WORKDIR /app
 
@@ -28,6 +28,7 @@ COPY ./packages/twenty-emails /app/packages/twenty-emails
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-server /app/packages/twenty-server
 
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npx nx run twenty-server:build
 
 RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server
@@ -41,11 +42,12 @@ COPY ./packages/twenty-front /app/packages/twenty-front
 COPY ./packages/twenty-ui /app/packages/twenty-ui
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-sdk /app/packages/twenty-sdk
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npx nx build twenty-front
 
 
 # Final stage: Run the application
-FROM node:24-alpine AS twenty
+FROM node:22-alpine AS twenty
 
 # Used to run healthcheck in docker
 RUN apk add --no-cache curl jq
