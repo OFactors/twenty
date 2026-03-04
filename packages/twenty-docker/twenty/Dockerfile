@@ -16,9 +16,6 @@ COPY ./packages/twenty-shared/package.json /app/packages/twenty-shared/
 COPY ./packages/twenty-front/package.json /app/packages/twenty-front/
 COPY ./packages/twenty-sdk/package.json /app/packages/twenty-sdk/
 
-# Increase memory for builds
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-
 # Install all dependencies
 RUN yarn && yarn cache clean && npx nx reset
 
@@ -44,10 +41,6 @@ COPY ./packages/twenty-front /app/packages/twenty-front
 COPY ./packages/twenty-ui /app/packages/twenty-ui
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-sdk /app/packages/twenty-sdk
-
-# Generate remote-dom files (gitignored, must be created before build)
-RUN npx nx run twenty-sdk:generate-remote-dom-elements
-
 RUN npx nx build twenty-front
 
 
