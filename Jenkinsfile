@@ -99,17 +99,29 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                     echo "=== Disk space ==="
                     df -h / | tail -1
 
-                    echo "=== Ensuring swap is active ==="
+                    echo "=== Ensuring 8GB swap is active ==="
                     docker run --rm --privileged -v /:/host alpine sh -c '
-                        if [ ! -f /host/swapfile ]; then
-                            dd if=/dev/zero of=/host/swapfile bs=1M count=4096 2>/dev/null
+                        if [ -f /host/swapfile ]; then
+                            CURRENT_SIZE=$(stat -c %s /host/swapfile 2>/dev/null || echo 0)
+                            DESIRED_SIZE=8589934592
+                            if [ "$CURRENT_SIZE" -lt "$DESIRED_SIZE" ]; then
+                                swapoff /host/swapfile 2>/dev/null || true
+                                rm -f /host/swapfile
+                                dd if=/dev/zero of=/host/swapfile bs=1M count=8192 2>/dev/null
+                                chmod 600 /host/swapfile
+                                mkswap /host/swapfile
+                                swapon /host/swapfile
+                                echo "Upgraded swap to 8GB"
+                            else
+                                swapon /host/swapfile 2>/dev/null || true
+                                echo "8GB swap already exists"
+                            fi
+                        else
+                            dd if=/dev/zero of=/host/swapfile bs=1M count=8192 2>/dev/null
                             chmod 600 /host/swapfile
                             mkswap /host/swapfile
                             swapon /host/swapfile
-                            echo "4GB swap created and enabled"
-                        else
-                            swapon /host/swapfile 2>/dev/null || true
-                            echo "Swap already exists"
+                            echo "8GB swap created and enabled"
                         fi
                         free -h
                     '
