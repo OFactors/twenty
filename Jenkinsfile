@@ -64,8 +64,11 @@ pipeline {
                 checkout scm
                 script {
                     env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    env.GIT_BRANCH_NAME  = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
                     env.GIT_COMMIT_MSG   = sh(script: 'git log -1 --pretty=%s', returnStdout: true).trim()
+
+                    // Jenkins sets GIT_BRANCH as origin/main — extract just the branch name
+                    def rawBranch = env.GIT_BRANCH ?: sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    env.GIT_BRANCH_NAME = rawBranch.replaceAll('^origin/', '')
 
                     // Auto-generate tag: branch-sha (e.g., main-a1b2c3d)
                     if (params.IMAGE_TAG?.trim()) {
@@ -169,7 +172,7 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                             exit 0
                         fi
 
-                        git config user.email "jenkins@avoca.cloud"
+                        git config user.email "jenkins@rupeequicker.com"
                         git config user.name "Jenkins CI"
                         git add k8s-manifests/clients/*/kustomization.yaml
                         git commit -m "chore: update Twenty CRM image to ${env.RESOLVED_TAG}
