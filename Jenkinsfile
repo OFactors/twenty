@@ -102,9 +102,9 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                     echo "=== Ensuring 8GB swap is active ==="
                     docker run --rm --privileged -v /:/host alpine sh -c '
                         if [ -f /host/swapfile ]; then
-                            CURRENT_SIZE=$(stat -c %s /host/swapfile 2>/dev/null || echo 0)
+                            CURRENT_SIZE=\$(stat -c %s /host/swapfile 2>/dev/null || echo 0)
                             DESIRED_SIZE=8589934592
-                            if [ "$CURRENT_SIZE" -lt "$DESIRED_SIZE" ]; then
+                            if [ "\$CURRENT_SIZE" -lt "\$DESIRED_SIZE" ]; then
                                 swapoff /host/swapfile 2>/dev/null || true
                                 rm -f /host/swapfile
                                 dd if=/dev/zero of=/host/swapfile bs=1M count=8192 2>/dev/null
