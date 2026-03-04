@@ -90,6 +90,17 @@ Dockerfile: ${params.DOCKERFILE_PATH}
             }
         }
 
+        stage('Fix Kernel Limits') {
+            steps {
+                sh """
+                    echo "=== Increasing inotify file watcher limit for Docker build ==="
+                    docker run --rm --privileged alpine sh -c \
+                        'sysctl -w fs.inotify.max_user_watches=524288 && sysctl -w fs.inotify.max_user_instances=1024'
+                    echo "Done."
+                """
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 sh """
