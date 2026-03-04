@@ -90,13 +90,22 @@ Dockerfile: ${params.DOCKERFILE_PATH}
             }
         }
 
-        stage('Fix Kernel Limits') {
+        stage('Prepare Build Environment') {
             steps {
                 sh """
-                    echo "=== Increasing inotify file watcher limit for Docker build ==="
+                    echo "=== Disk space before cleanup ==="
+                    df -h / | tail -1
+
+                    echo "=== Cleaning Docker build cache, dangling images, and stopped containers ==="
+                    docker system prune -af --volumes || true
+                    docker builder prune -af || true
+
+                    echo "=== Disk space after cleanup ==="
+                    df -h / | tail -1
+
+                    echo "=== Increasing inotify file watcher limit ==="
                     docker run --rm --privileged alpine sh -c \
                         'sysctl -w fs.inotify.max_user_watches=524288 && sysctl -w fs.inotify.max_user_instances=1024'
-                    echo "Done."
                 """
             }
         }
@@ -110,8 +119,6 @@ Dockerfile: ${params.DOCKERFILE_PATH}
                         -t ${DOCR_IMAGE}:${env.RESOLVED_TAG} \
                         -t ${DOCR_IMAGE}:latest \
                         --build-arg BUILD_COMMIT=${env.GIT_COMMIT_SHORT} \
-                        --memory=4g \
-                        --memory-swap=8g \
                         .
 
                     echo "=== Build complete ==="
